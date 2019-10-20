@@ -38,90 +38,164 @@
 #include <string>
 #include <cstdio>
 #include <iostream>
+#include <cstddef>
 
-struct queue
-{
-	size_t size;
-	size_t buffer_size;
-	int* data;
+template<typename T>
+class stack {
+public:
+    stack();
 
-	queue(): size(0), buffer_size(8)
-	{
-		data = new int[buffer_size];
-	}
+    ~stack();
 
-	~queue()
-	{
-		delete[] data;
-	}
+    void push(T);
 
-	void double_buffer()
-	{
-		int* new_data = new int[2*buffer_size];//check null ?
+    bool empty() const;
 
-		for(size_t i=0; i < size; ++i)
-		{
-			new_data[i] = data[i];
-		}
+    size_t size() const;
 
-		delete[] data;
-		data = new_data;
-	}
+    T pop();
 
-	void push_back(int value)
-	{
-		if(size >= buffer_size)
-		{
-			double_buffer();
-		}
+    T top() const;
 
-		data[size] = value;
-		++size;
-	}
-
-	int pop_front()
-	{
-		if(size > 0)
-		{
-			size--;
-			return data[size]; //fix
-		}
-        return -1;
-	}
+private:
+    struct node {
+        T data;
+        node *next;
+    };
+    node *top_node;
+    size_t len;
 };
 
-int main(int argc, char** argv)
-{
-	std::string result = "YES";
+template<typename T>
+bool stack<T>::empty() const {
+    return len == 0 && top_node == nullptr;
+}
 
-	int n = 0;
-	std::cin>>n;
-	int command = -1;
-	int value = -1;
+template<typename T>
+stack<T>::stack() {
+    top_node = nullptr;
+    len = 0;
+}
+
+template<typename T>
+void stack<T>::push(T val) {
+    node *new_top = new node;
+    new_top->data = val;
+    new_top->next = top_node;
+    top_node = new_top;
+    ++len;
+}
+
+template<typename T>
+T stack<T>::top() const {
+    if (!empty())
+        return top_node->data;
+    else
+        return -1;//fail
+}
+
+template<typename T>
+size_t stack<T>::size() const {
+    return len;
+}
+
+template<typename T>
+T stack<T>::pop() {
+    node *to_delete = top_node;
+    T result = to_delete->data;
+    top_node = top_node->next;
+    delete to_delete;
+    --len;
+    return result;
+}
+
+template<typename T>
+stack<T>::~stack() {
+    while (top_node != nullptr) {
+        node *tmp = top_node;
+        top_node = top_node->next;
+        delete tmp;
+    }
+}
+
+class queue {
+private:
+    stack<int> in;
+    stack<int> out;
+public:
+    void push(int v);
+
+    int pop();
+
+    int front();
+
+    //int back();
+};
+
+int queue::front() {
+    if (out.empty()) {
+        while (!in.empty()) {
+//            in->out
+            out.push(in.pop());
+        }
+    }
+
+    if (!out.empty()) {
+        return out.top();
+    } else {
+        return -1;
+    }
+}
+
+void queue::push(int v) {
+    in.push(v);
+}
+
+int queue::pop() {
+    if (out.empty()) {
+        while (!in.empty()) {
+            out.push(in.pop());
+        }
+    }
+
+    if (!out.empty()) {
+        return out.pop();
+    } else {
+        return -1;
+    }
+}
+
+int main(int argc, char **argv) {
+    std::string result = "YES";
+
+    int n = 0;
+    std::cin >> n;
+    int command = -1;
+    int value = -1;
     queue v;
-	for(size_t i=0; i< n; ++i)
-    {
-        std::cin>>command;
-        std::cin>>value;
+    for (size_t i = 0; i < n; ++i) {
+        std::cin >> command;
+        std::cin >> value;
 
-        switch (command)
-        {
+        switch (command) {
 //            case 1:
 //                break;
+
             case 2:
-                if(value != v.pop_front())
-                {
+            {const int tmp = v.pop();
+                std::cout<<tmp<<std::endl;
+                if (value != tmp) {
                     result = "NO";
-                }
+                }}
                 break;
             case 3:
-                v.push_back(value);
+                v.push(value);
                 break;
 //            case 4:
 //                break;
         }
     }
 
-	std::cout<<result;
-	return 0;
+    std::cout << result;
+    return 0;
 }

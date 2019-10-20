@@ -39,7 +39,7 @@
 #include <cstdio>
 #include <iostream>
 #include <cstddef>
-
+#include <cassert>
 template<typename T>
 class stack {
 public:
@@ -101,12 +101,16 @@ size_t stack<T>::size() const {
 
 template<typename T>
 T stack<T>::pop() {
-    node *to_delete = top_node;
-    T result = to_delete->data;
-    top_node = top_node->next;
-    delete to_delete;
-    --len;
-    return result;
+    if(top_node != nullptr) {
+        node *to_delete = top_node;
+        T result = to_delete->data;
+        top_node = top_node->next;
+        delete to_delete;
+        --len;
+        return result;
+    } else{
+        return -1;
+    }
 }
 
 template<typename T>
@@ -165,9 +169,39 @@ int queue::pop() {
     }
 }
 
+void test()
+{
+    stack<int> st;
+    assert(st.empty());
+    assert(st.top()==-1);
+    assert(st.pop()==-1);
+    st.push(5);
+    assert(st.size()==1);
+    st.push(2);
+    assert(st.size()==2);
+    assert(st.pop()==2);
+    assert(st.pop()==5);
+
+    queue q;
+    assert(q.pop()==-1);
+    q.push(1);
+    q.push(2);
+    q.push(3);
+    q.push(4);
+    q.push(5);
+    q.push(6);
+    assert(q.pop()==1);
+    assert(q.pop()==2);
+    assert(q.pop()==3);
+    assert(q.pop()==4);
+    assert(q.pop()==5);
+    assert(q.pop()==6);
+}
+
 int main(int argc, char **argv) {
     std::string result = "YES";
 
+    //test();
     int n = 0;
     std::cin >> n;
     int command = -1;
@@ -181,12 +215,12 @@ int main(int argc, char **argv) {
 //            case 1:
 //                break;
 
-            case 2:
-            {const int tmp = v.pop();
-                std::cout<<tmp<<std::endl;
+            case 2: {
+                const int tmp = v.pop();
                 if (value != tmp) {
                     result = "NO";
-                }}
+                }
+            }
                 break;
             case 3:
                 v.push(value);

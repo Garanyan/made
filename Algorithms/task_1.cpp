@@ -48,7 +48,7 @@ public:
 
     void push(T value);
 
-    int pop();
+    T pop();
 
     bool empty();
 
@@ -63,7 +63,7 @@ private:
 };
 
 template<typename T>
-int stack<T>::pop(){
+T stack<T>::pop(){
     assert(!empty());
     size--;
     return data[size];

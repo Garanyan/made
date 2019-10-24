@@ -51,7 +51,7 @@ public:
 
     void delete_val(T val);
 
-    bool make_heap();
+    //bool make_heap();
 
     T &operator[](size_t i);
 
@@ -62,20 +62,11 @@ private:
     size_t buffer_size;
     T *data;
 
-    T &left(size_t i){
-        assert(size > 2 * i + 1);
-        return data[2 * i + 1];
-    }
+    T &left(size_t i);
 
-    T &right(size_t i){
-        assert(size > 2 * i + 2);
-        return data[2 * i + 2];
-    }
+    T &right(size_t i);
 
-    T &parent(size_t i){
-        assert((i - 1) / 2 < size);
-        return data[(i - 1) / 2];
-    }
+    T &parent(size_t i);
 
     size_t parent_id(size_t i);
 
@@ -83,16 +74,7 @@ private:
 
     size_t right_id(size_t i);
 
-    void double_buffer(){
-        T *new_data = new T[2 * buffer_size];//check null ?
-        buffer_size = buffer_size * 2;
-        for(size_t i = 0; i < size; ++i){
-            new_data[i] = data[i];
-        }
-
-        delete[] data;
-        data = new_data;
-    }
+    void double_buffer();
 
     void sift_up(size_t i);
 
@@ -194,6 +176,36 @@ void heap<T>::delete_val(T val){
             sift_down(i);
         }
     }
+}
+
+template<typename T>
+void heap<T>::double_buffer(){
+    T *new_data = new T[2 * buffer_size];//check null ?
+    buffer_size = buffer_size * 2;
+    for(size_t i = 0; i < size; ++i){
+        new_data[i] = data[i];
+    }
+
+    delete[] data;
+    data = new_data;
+}
+
+template<typename T>
+T& heap<T>::parent(size_t i){
+    assert((i - 1) / 2 < size);
+    return data[(i - 1) / 2];
+}
+
+template<typename T>
+T& heap<T>::right(size_t i){
+    assert(size > 2 * i + 2);
+    return data[2 * i + 2];
+}
+
+template<typename T>
+T& heap<T>::left(size_t i){
+    assert(size > 2 * i + 1);
+    return data[2 * i + 1];
 }
 
 void task_2(size_t n, std::vector<int> &input, size_t window_size){

@@ -45,9 +45,9 @@ public:
 
     T pop();
 
-    T top();
+    T top() const;
 
-    bool empty();
+    bool empty() const;
 
     void delete_val(T val);
 
@@ -92,7 +92,7 @@ void heap<T>::sift_up(size_t i){
 }
 
 template<typename T>
-bool heap<T>::empty(){
+bool heap<T>::empty() const{
     return size == 0;
 }
 
@@ -161,7 +161,7 @@ size_t heap<T>::index(T val){
 }
 
 template<typename T>
-T heap<T>::top(){
+T heap<T>::top() const{
     assert(!empty());
     return data[0];
 }

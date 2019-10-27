@@ -35,17 +35,19 @@ class heap{
 public:
     heap() : size(0), buffer_size(8){
         data = new T[buffer_size];
+        indexes = new size_t[buffer_size];
     }
 
     ~heap(){
         delete[] data;
+        delete[] indexes;
     }
 
-    void push(T value);
+    void push(T value, size_t index);
 
     T pop();
 
-    T top() const;
+    T top(size_t min_index);
 
     bool empty() const;
 
@@ -61,6 +63,7 @@ private:
     size_t size;
     size_t buffer_size;
     T *data;
+    size_t *indexes;
 
     T &left(size_t i);
 
@@ -87,6 +90,7 @@ template<typename T>
 void heap<T>::sift_up(size_t i){
     if(i > 0 && data[i] > parent(i)){
         std::swap(data[i], parent(i));
+        std::swap(indexes[i], indexes[parent_id(i)]);
         sift_up(parent_id(i));
     }
 }
@@ -111,6 +115,7 @@ void heap<T>::sift_down(size_t i){
 
     if(i != max_id){
         std::swap(data[i], data[max_id]);
+        std::swap(indexes[i], indexes[max_id]);
         sift_down(max_id);
     }
 }
@@ -126,12 +131,13 @@ size_t heap<T>::left_id(size_t i){
 }
 
 template<typename T>
-void heap<T>::push(T value){
+void heap<T>::push(T value, size_t index){
     if(size >= buffer_size){
         double_buffer();
     }
 
     data[size] = value;
+    indexes[size] = index;
     ++size;
     sift_up(size - 1);
 }
@@ -142,6 +148,7 @@ T heap<T>::pop(){
     T max = data[0];
     size--;
     data[0] = data[size];
+    indexes[0] = indexes[size];
     sift_down(0);
     return max;
 }
@@ -161,9 +168,15 @@ size_t heap<T>::index(T val){
 }
 
 template<typename T>
-T heap<T>::top() const{
+T heap<T>::top(size_t min_index){
     assert(!empty());
-    return data[0];
+    if(indexes[0] >= min_index){
+        return data[0];
+    }
+    else{
+        pop();
+        return top(min_index);
+    }
 }
 
 template<typename T>
@@ -181,13 +194,17 @@ void heap<T>::delete_val(T val){
 template<typename T>
 void heap<T>::double_buffer(){
     T *new_data = new T[2 * buffer_size];//check null ?
+    size_t *new_indexes = new size_t[2 * buffer_size];
     buffer_size = buffer_size * 2;
     for(size_t i = 0; i < size; ++i){
         new_data[i] = data[i];
+        new_indexes[i] = indexes[i];
     }
 
     delete[] data;
+    delete[] indexes;
     data = new_data;
+    indexes = new_indexes;
 }
 
 template<typename T>
@@ -212,13 +229,12 @@ void task_2(size_t n, std::vector<int> &input, size_t window_size){
     heap<int> h;
     size_t i = 0;
     for(; i < window_size; i++){
-        h.push(input[i]);
+        h.push(input[i], i);
     }
-    std::cout << h.top() << " ";
+    std::cout << h.top(0) << " ";
     for(; i < n; i++){
-        h.delete_val(input[i - window_size]);
-        h.push(input[i]);
-        std::cout << h.top() << " ";
+        h.push(input[i], i);
+        std::cout << h.top(i - window_size+1) << " ";
     }
     std::cout << std::endl;
 }

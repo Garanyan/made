@@ -50,7 +50,7 @@ public:
 
     T pop();
 
-    bool empty();
+    bool empty() const;
 
     size_t getSize() const;
 
@@ -70,7 +70,7 @@ T stack<T>::pop(){
 }
 
 template<typename T>
-bool stack<T>::empty(){
+bool stack<T>::empty() const{
     return size == 0;
 }
 
@@ -120,7 +120,7 @@ public:
 
     int pop();
 
-    bool empty();
+    bool empty() const;
 
 };
 
@@ -138,7 +138,7 @@ int queue::pop(){
     return out.pop();
 }
 
-bool queue::empty(){
+bool queue::empty() const{
     return in.empty() && out.empty();
 }
 

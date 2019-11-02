@@ -112,8 +112,8 @@ void task_3(size_t n, size_t k){
         int value = 0;
         std::cin >> value;
         sorted_vector.push(value);
-        sorted_vector.print();
     }
+    sorted_vector.print();
 }
 
 int main(int argc, char **argv){

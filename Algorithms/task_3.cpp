@@ -77,31 +77,14 @@ void SortedVector::push(int value){
         size++;
     }
     else if(size < buffer_size){
-        bool inserted = false;
         int id = BinarySearchPosition(data, 0, size - 1, value);
-        if(id != -1 && id + 1 < buffer_size)
-        {
+        if(id != -1 && id + 1 < buffer_size){
             std::memmove(data + id + 1, data + id, (size - id) * sizeof(int));
             data[id] = value;
         }
-        else if (id == -1){
+        else if(id == -1){
             data[size] = value;
         }
-
-//        for(size_t k = 0; k < size; ++k){
-//            if(data[k] > value){
-//                if(k + 1 < buffer_size){
-//                    //std::cout<<k<<" "<< size - 2<<" "<< k + 1<< std::endl;
-//                    std::memmove(data + k + 1, data + k, (size - k) * sizeof(int));
-//                }
-//                data[k] = value;
-//                inserted = true;
-//                break;
-//            }
-//        }
-//        if(!inserted){
-//            data[size] = value;
-//        }
         size++;
     }
     else{
@@ -113,18 +96,6 @@ void SortedVector::push(int value){
         else if(id + 1 == size){
             data[id] = value;
         }
-        //std::cout << id << std::endl;
-
-//        for(size_t k = 0; k < size; ++k){
-//            if(data[k] > value){
-//                if(k + 1 < size){
-//                    std::cout << "right " << k << std::endl;
-//                    std::memmove(data + k + 1, data + k, (size - k - 1) * sizeof(int));
-//                }
-//                data[k] = value;
-//                break;
-//            }
-//        }
     }
 }
 
@@ -143,27 +114,12 @@ void task_3(size_t n, size_t k){
         sorted_vector.push(value);
         sorted_vector.print();
     }
-
-    // std::vector<int> arr = {1,3,5,6,8,9};
-    //merge(arr, 4);
-//    auto arr = new int[5];
-//    arr[0] = 5;
-//    arr[1] = 6;
-//    arr[2] = 7;
-//    arr[3] = 9;
-//    arr[4] = 0;
-//    std::memmove(arr + 2, arr + 1, 3*sizeof(int));
-//    for(size_t i =0; i < 5; i++)
-//    {
-//        std::cout<<arr[i]<<" ";
-//    }
-
 }
 
 int main(int argc, char **argv){
-
     size_t n, k;
     std::cin >> n >> k;
     task_3(n, k);
+
     return 0;
 }

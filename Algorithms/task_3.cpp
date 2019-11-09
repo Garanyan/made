@@ -1,4 +1,3 @@
-
 //
 // Created by ovanes on 28/10/2019.
 //
@@ -17,103 +16,103 @@
 #include <vector>
 #include <cstring>
 
-class SortedVector{
-public:
-    explicit SortedVector(size_t k);
+void merge(int arr[], const int left_begin, const int left_end, const int right_end, const int stop = -1){
+    int left_it, right_it, result_it;
+    int left_size = left_end - left_begin + 1;
+    int right_size = right_end - left_end;
+    int left_array[left_size], right_array[right_size];
 
-    ~SortedVector();
+    for(left_it = 0; left_it < left_size; left_it++)
+        left_array[left_it] = arr[left_begin + left_it];
+    for(right_it = 0; right_it < right_size; right_it++)
+        right_array[right_it] = arr[left_end + 1 + right_it];
 
-    void push(int value);
-
-    void print() const;
-
-private:
-
-    size_t buffer_size;
-    size_t size;
-    int *data;
-};
-
-SortedVector::~SortedVector(){
-    delete[] data;
-}
-
-SortedVector::SortedVector(size_t k) : size(0), buffer_size(k){
-    data = new int[buffer_size];
-}
-
-int BinarySearchPosition(int *array, int left, int right, int value){
-    if(value <= array[left])
-        return left;
-    if(value > array[right])
-        return -1;
-
-    int middle = (left + right) / 2;
-    if(array[middle] == value){
-        return middle;
-    }
-
-    else if(array[middle] < value){
-        if(middle + 1 <= right && value <= array[middle + 1]){
-            return middle + 1;
+    right_it = 0;
+    left_it = 0;
+    result_it = left_begin;
+    while(left_it < left_size && right_it < right_size){
+        if(left_array[left_it] <= right_array[right_it]){
+            arr[result_it] = left_array[left_it];
+            left_it++;
         }
         else{
-            return BinarySearchPosition(array, middle + 1, right, value);
+            arr[result_it] = right_array[right_it];
+            right_it++;
+        }
+        result_it++;
+        if(result_it == stop){
+            return;
         }
     }
-    else{
-        if(left <= middle - 1 && array[middle - 1] < value){
-            return middle;
-        }
-        else{
-            return BinarySearchPosition(array, left, middle - 1, value);
-        }
+
+    while(left_it < left_size){
+        arr[result_it] = left_array[left_it];
+        left_it++;
+        result_it++;
+        if(result_it == stop)
+            return;
+    }
+
+    while(right_it < right_size){
+        arr[result_it] = right_array[right_it];
+        right_it++;
+        result_it++;
+        if(result_it == stop)
+            return;
     }
 }
 
-void SortedVector::push(int value){
-    if(size == 0){
-        data[size] = value;
-        size++;
+void mergeSort(int arr[], int l, int r){
+    if(l < r){
+        // Same as (l+r)/2, but avoids overflow for
+        // large l and h
+        int m = l + (r - l) / 2;
+
+        // Sort first and second halves
+        mergeSort(arr, l, m);
+        mergeSort(arr, m + 1, r);
+
+        merge(arr, l, m, r);
     }
-    else if(size < buffer_size){
-        int id = BinarySearchPosition(data, 0, size - 1, value);
-        if(id != -1 && id + 1 < buffer_size){
-            std::memmove(data + id + 1, data + id, (size - id) * sizeof(int));
-            data[id] = value;
-        }
-        else if(id == -1){
-            data[size] = value;
-        }
-        size++;
-    }
-    else{
-        int id = BinarySearchPosition(data, 0, size - 1, value);
-        if(id != -1 && id + 1 < size){
-            std::memmove(data + id + 1, data + id, (size - id - 1) * sizeof(int));
-            data[id] = value;
-        }
-        else if(id + 1 == size){
-            data[id] = value;
-        }
-    }
+
 }
 
-void SortedVector::print() const{
-    for(size_t i = 0; i < size; i++){
-        std::cout << data[i] << " ";
+void print(const std::vector<int> &vector){
+    for(size_t i = 0; i < vector.size(); i++){
+        std::cout << vector[i] << " ";
     }
     std::cout << std::endl;
 }
 
 void task_3(size_t n, size_t k){
-    SortedVector sorted_vector(k);
-    for(size_t i = 0; i < n; ++i){
+    std::vector<int> result;
+    result.reserve(2 * k);
+    for(size_t i = 0; i < k; ++i){
         int value = 0;
         std::cin >> value;
-        sorted_vector.push(value);
+        result.push_back(value);
     }
-    sorted_vector.print();
+
+    mergeSort(result.data(), 0, result.size() - 1);
+    for(size_t i = 0; i < k; ++i){
+        result.push_back(0);
+    }
+    for(size_t i = k; i < n;){
+        std::vector<int> tmp;
+        for(size_t j = 0; j < k && i < n; ++i, ++j){
+            int value = 0;
+            std::cin >> value;
+            tmp.push_back(value);
+        }
+        mergeSort(tmp.data(), 0, tmp.size() - 1);
+        std::copy(tmp.begin(), tmp.end(), result.begin() + k);
+        merge(result.data(), 0, k - 1, k + tmp.size() - 1, k);
+        //print(result);
+    }
+    for(size_t i = 0; i < k; i++){
+        std::cout << result[i] << " ";
+    }
+    std::cout << std::endl;
 }
 
 int main(int argc, char **argv){

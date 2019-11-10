@@ -129,6 +129,10 @@ def setup_parser(parser):
         "-d", "--dataset", default=DEFAULT_DATASET_PATH, dest="dataset",
         help="path to dataset to build Inverted Index",
     )
+    build_parser.add_argument(
+        "-o", "--output", default="inverted.index", dest="output",
+        help="path to output to export Inverted Index",
+    )
     build_parser.set_defaults(callback=process_build_arguments)
 
     query_parser = subparsers.add_parser("query", help="query Inverted Index")
@@ -146,6 +150,10 @@ def setup_parser(parser):
         # default=open("../resources/queries.txt"),
         dest="query_file", help="collection of queries to run against Inverted Index",
     )
+    query_parser.add_argument(
+        "--index", default="inverted.index",
+        dest="index", help="path to file with inverted index",
+    )
     query_parser.set_defaults(
         dataset=DEFAULT_DATASET_PATH,
         callback=process_query_arguments,
@@ -153,21 +161,28 @@ def setup_parser(parser):
 
 
 def process_build_arguments(build_arguments):
-    print("start loading documents...")
+    logger.debug("start loading documents...")
     documents = load_documents(build_arguments.dataset)
-    print("loading documents is complete")
-    print("start building inverted index...")
+    logger.debug("loading documents is complete")
+    logger.debug("start building inverted index...")
     inverted_index = build_inverted_index(documents)
-    print("inverted index is ready for queries")
+    logger.debug("inverted index is ready")
     # TODO: add dump
-    inverted_index.dump("inverted.index")
+    logger.debug("start dump to " + build_arguments.output)
+    inverted_index.dump(build_arguments.output)
 
 
 def process_query_arguments(query_arguments):
-    return process_queries(query_arguments.dataset, query_arguments.query_file)
+    inverted_index = InvertedIndex.load(query_arguments.index)
+    for query_line in query_arguments.query_file:
+        query = query_line.rstrip("\n").lower().split()
+        document_ids = inverted_index.query(query)
+        print(','.join(map(str, document_ids)))
+        logger.debug("the answer to query %s is %s", query, document_ids)
 
 
-def process_queries(dataset, query_file):
+
+def process_queries_old(dataset, query_file):
     # inverted_index = InvertedIndex.load("inverted.index")
     # document_ids = inverted_index.query(["two", "words"])
     # print(f"the answer is {document_ids}")
@@ -183,7 +198,7 @@ def process_queries(dataset, query_file):
     for query_line in query_file:
         query = query_line.rstrip("\n").lower().split()
         document_ids = inverted_index.query(query)
-        print(f"the answer to query {query} is {document_ids}")
+        print(f"{document_ids}")
         logger.debug("the answer to query %s is %s", query, document_ids)
 
 

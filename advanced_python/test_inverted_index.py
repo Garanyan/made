@@ -4,7 +4,7 @@ from textwrap import dedent
 
 import pytest
 
-from inverted_index import process_query_arguments, load_documents, build_inverted_index, InvertedIndex
+from inverted_index import process_query_arguments, load_documents, build_inverted_index, InvertedIndex, JsonZipStoragePolicy, JsonStoragePolicy
 
 DATASET_BIG_FPATH = "resources/wikipedia_sample"
 DATASET_SMALL_FPATH = "resources/wikipedia_sample_small"
@@ -94,6 +94,15 @@ def test_can_dump_and_load_inverted_index(tmpdir, wikipedia_inverted_index):
     assert wikipedia_inverted_index == loaded_inverted_index, (
         "load should return the same inverted index"
     )
+
+
+def test_check_compression_good():
+    json_inverted_index = InvertedIndex.load("inverted_index/inverted_json.index", JsonStoragePolicy())
+    compressed_inverted_index = InvertedIndex.load("inverted_index/inverted_koi8r_json.index", JsonZipStoragePolicy())
+    assert json_inverted_index.query(["two", "words"]) == compressed_inverted_index.query(
+        ["two", "words"]), "compressin give another answer"
+
+    assert json_inverted_index.get_size() == compressed_inverted_index.get_size(), "compressed file has diff num of records"
 
 
 @pytest.mark.xfail

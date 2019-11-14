@@ -165,3 +165,23 @@ def test_process_query_arguments_print_to_stdout(capsys, caplog, dataset_fpath):
         assert "['two', 'words']" in captured.out
         assert "['two', 'words']" not in captured.err
         assert ("my_example", 20, "the answer to query ['even', 'more', 'words'] is []") in caplog.record_tuples
+
+
+from inverted_index import sleep
+
+@patch(time.sleep)
+def test(sleep_mock):
+    sleep_mock.return_value = None
+
+
+@patch()
+@patch()
+def test_do_busy_work_nested(full_sleep_mock, sleep_mock):
+    do_busy_work_nested()
+    assert full_sleep_mock.call_count == 1
+    assert sleep_mock.mock.call_count == 1
+
+    assert full_sleep_mock.call_args == call(5)
+    assert sleep_mock.call_args == call(4)
+
+

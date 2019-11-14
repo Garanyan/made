@@ -6,6 +6,22 @@ import logging
 import sys
 import string
 
+import time
+from time import sleep
+
+
+def do_busy_work(seconds=4):
+    return time.sleep(seconds)
+
+
+def do_busy_work_full_import(seconds=5):
+    return sleep(seconds)
+
+def do_busy_work_nested():
+    do_busy_work()
+    do_busy_work_full_import()
+
+
 DEFAULT_DATASET_PATH = "resources/wikipedia_sample"
 
 # logger = logging.getLogger(__name__)
@@ -90,7 +106,7 @@ class StoragePolicy:
 
 
 class JsonZipStoragePolicy(StoragePolicy):
-    #https://medium.com/@busybus/zipjson-3ed15f8ea85d
+    # https://medium.com/@busybus/zipjson-3ed15f8ea85d
     def dump(self, word_to_docs_mapping, index_fio):
         serializable_word_to_docs_mapping = {
             word: list(doc_ids)

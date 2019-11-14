@@ -14,4 +14,5 @@ add_executable(task_4 Algorithms/task_4.cpp)
 ### Семинары
 add_executable(seminar_2 Algorithms/seminar_2.cpp)
 add_executable(seminar_3 Algorithms/seminar_3.cpp)
+add_executable(seminar_4 Algorithms/seminar_4.cpp)
 

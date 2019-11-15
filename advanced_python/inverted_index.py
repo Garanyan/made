@@ -6,6 +6,18 @@ import logging
 import sys
 import string
 
+import time
+from time import sleep
+
+
+def do_busy_work(seconds=4):
+    return time.sleep(seconds)
+
+
+def do_busy_work_full_import(seconds=5):
+    return sleep(seconds)
+
+
 DEFAULT_DATASET_PATH = "resources/wikipedia_sample"
 
 # logger = logging.getLogger(__name__)

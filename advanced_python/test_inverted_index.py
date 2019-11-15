@@ -3,6 +3,8 @@ from argparse import Namespace
 from textwrap import dedent
 
 import pytest
+from unittest.mock import patch, call, Mock
+
 
 from inverted_index import process_query_arguments, load_documents, build_inverted_index, InvertedIndex, JsonZipStoragePolicy, JsonStoragePolicy
 
@@ -165,3 +167,15 @@ def test_process_query_arguments_print_to_stdout(capsys, caplog, dataset_fpath):
         assert "['two', 'words']" in captured.out
         assert "['two', 'words']" not in captured.err
         assert ("my_example", 20, "the answer to query ['even', 'more', 'words'] is []") in caplog.record_tuples
+
+
+from inverted_index import sleep
+
+@patch(time.sleep)
+def test_sleep_1(sleep_mock):
+    do_busy_work()
+
+
+@patch(inverted_index.sleep)
+def test_sleep_1(full_sleep_mock):
+    do_busy_work_full_import(5)

@@ -106,3 +106,15 @@
 2019-11-11 00:32:17 - my_example - DEBUG - the answer to query ['тестовый', 'запрос'] is []
 2019-11-11 00:32:17 - my_example - DEBUG - the answer to query ['кодировка', 'cp1251'] is []
 2019-11-12 21:24:02 - my_example - INFO - Application called with arguments Namespace()
+2019-11-19 12:29:27 - my_example - INFO - Application called with arguments Namespace(callback=<function process_build_arguments at 0x7f07b259d048>, dataset='resources/wikipedia_sample', output='inverted_index/inverted_json.index')
+2019-11-19 12:29:27 - my_example - DEBUG - start loading documents...
+2019-11-19 12:29:28 - my_example - DEBUG - loading documents is complete
+2019-11-19 12:29:28 - my_example - DEBUG - start building inverted index...
+2019-11-19 12:29:38 - my_example - DEBUG - inverted index is ready
+2019-11-19 12:29:38 - my_example - DEBUG - start dump to inverted_index/inverted_json.index
+2019-11-19 12:31:07 - my_example - INFO - Application called with arguments Namespace(callback=<function process_build_arguments at 0x7fda8133d048>, dataset='resources/wikipedia_sample', output='inverted_index/inverted_json.index')
+2019-11-19 12:31:07 - my_example - DEBUG - start loading documents...
+2019-11-19 12:31:07 - my_example - DEBUG - loading documents is complete
+2019-11-19 12:31:07 - my_example - DEBUG - start building inverted index...
+2019-11-19 12:31:18 - my_example - DEBUG - inverted index is ready
+2019-11-19 12:31:18 - my_example - DEBUG - start dump to inverted_index/inverted_json.index

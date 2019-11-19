@@ -4,9 +4,11 @@ from textwrap import dedent
 
 import pytest
 from unittest.mock import patch, call, Mock
+import time
 
-
-from inverted_index import process_query_arguments, load_documents, build_inverted_index, InvertedIndex, JsonZipStoragePolicy, JsonStoragePolicy
+import inverted_index
+from inverted_index import process_query_arguments, load_documents, build_inverted_index, InvertedIndex, JsonZipStoragePolicy, JsonStoragePolicy, do_busy_work, \
+    do_busy_work_full_import
 
 DATASET_BIG_FPATH = "resources/wikipedia_sample"
 DATASET_SMALL_FPATH = "resources/wikipedia_sample_small"
@@ -100,7 +102,7 @@ def test_can_dump_and_load_inverted_index(tmpdir, wikipedia_inverted_index):
 
 def test_check_compression_good():
     json_inverted_index = InvertedIndex.load("inverted_index/inverted_json.index", JsonStoragePolicy())
-    compressed_inverted_index = InvertedIndex.load("inverted_index/inverted_koi8r_json.index", JsonZipStoragePolicy())
+    compressed_inverted_index = InvertedIndex.load("inverted_index/inverted_json_zip.index", JsonZipStoragePolicy())
     assert json_inverted_index.query(["two", "words"]) == compressed_inverted_index.query(
         ["two", "words"]), "compressin give another answer"
 
@@ -169,13 +171,11 @@ def test_process_query_arguments_print_to_stdout(capsys, caplog, dataset_fpath):
         assert ("my_example", 20, "the answer to query ['even', 'more', 'words'] is []") in caplog.record_tuples
 
 
-from inverted_index import sleep
-
-@patch(time.sleep)
+@patch('time.sleep')
 def test_sleep_1(sleep_mock):
     do_busy_work()
 
 
-@patch(inverted_index.sleep)
-def test_sleep_1(full_sleep_mock):
+@patch('inverted_index.sleep')
+def test_sleep_2(full_sleep_mock):
     do_busy_work_full_import(5)

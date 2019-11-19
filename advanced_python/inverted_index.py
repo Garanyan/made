@@ -11,11 +11,13 @@ from time import sleep
 
 
 def do_busy_work(seconds=4):
+    print("time sleep")
     return time.sleep(seconds)
 
 
 def do_busy_work_full_import(seconds=5):
     return sleep(seconds)
+
 
 def do_busy_work_nested():
     do_busy_work()

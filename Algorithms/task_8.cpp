@@ -12,6 +12,7 @@
 // проверки принадлежности данной строки множеству.
 
 //1_2. Для разрешения коллизий используйте двойное хеширование.
+
 #include <cassert>
 #include <iostream>
 #include <string>
@@ -40,7 +41,6 @@ public:
 private:
     struct HashTableNode{
         std::string key;
-        //HashTableNode *next = nullptr;
 
         HashTableNode(std::string key_) : key(std::move(key_)){}
     };
@@ -68,7 +68,10 @@ HashTable::~HashTable(){
 bool HashTable::Has(const std::string &key) const{
     assert(!key.empty());
 
-    for(size_t hash = firstHash(key); table.at(hash) != nullptr; hash = (hash+secondHash(key))%table.size()){
+    size_t startHash = firstHash(key);
+    size_t shift = secondHash(key);
+    for(size_t hash = firstHash(key), i = 1;
+        table.at(hash) != nullptr; hash = (startHash + i * shift) % table.size(), i++){
         if(table.at(hash)->key == key){
             return true;
         }
@@ -85,11 +88,12 @@ bool HashTable::Add(const std::string &key){
     }
 
     size_t hash = firstHash(key);
+    size_t shift = secondHash(key);
+    size_t i = 1;
     const size_t startHash = hash;
     do{
         if(table[hash] == nullptr){
             HashTableNode *new_node = new HashTableNode(key);
-            //new_node->next = table[startHash];
             table[hash] = new_node;
             ++filled_size_;
             return true;
@@ -97,7 +101,8 @@ bool HashTable::Add(const std::string &key){
         else if(table[hash]->key == key){
             return false;
         }
-        hash = (hash+secondHash(key))%table.size();
+        hash = (startHash + i * shift) % table.size();
+        ++i;
     } while(hash != startHash);
 
     return false;
@@ -106,7 +111,10 @@ bool HashTable::Add(const std::string &key){
 bool HashTable::Remove(const std::string &key){
     assert(!key.empty());
 
-    for(size_t hash = firstHash(key); table.at(hash) != nullptr; hash = (hash+secondHash(key))%table.size()){
+    size_t startHash = firstHash(key);
+    size_t shift = secondHash(key);
+    for(size_t hash = firstHash(key), i = 1;
+        table.at(hash) != nullptr; hash = (startHash + i * shift) % table.size(), i++){
         if(table[hash]->key == key){
             delete table[hash];
             table[hash] = nullptr;
@@ -119,9 +127,8 @@ bool HashTable::Remove(const std::string &key){
 }
 
 void HashTable::doubleHashTable(){
-    //std::cout<<"double tree"<<std::endl;
     auto prevTable = table;
-    std::vector<HashTableNode *> newTable(table.size() * 2, nullptr);
+    std::vector<HashTableNode *> newTable(table.size() * 4, nullptr);
     table = newTable;
 
     for(size_t i = 0; i < prevTable.size(); ++i){
@@ -140,21 +147,12 @@ unsigned int HashTable::hornerHash(const char *str, int a) const{
 }
 
 unsigned int HashTable::firstHash(const std::string &str) const{
-    unsigned int hash = hornerHash(str.data(), 31);
-    //std::cout<<"1 hash " + str+" :"<<hash<<std::endl;
-    return hash;
+    return hornerHash(str.data(), 31);
 }
 
 unsigned int HashTable::secondHash(const std::string &str) const{
-    unsigned int hash = hornerHash(str.data(), 19);
-    //std::cout<<"2 hash " + str+" :"<<hash<<std::endl;
-
-    return (str[0] * table.size() - 1) % table.size();
+    return (str[0] * table.size() * str.length() - 1) % table.size();
 }
-
-
-//stdin
-//+ hello + bye ? bye + bye - bye ? bye ? hello + hello + bye ? bye + bye - bye ? bye ? hello ? ova + ova + ova ? ova ? ova  + asd + asd
 
 int main(){
     HashTable table;

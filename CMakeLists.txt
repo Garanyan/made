@@ -9,6 +9,7 @@ add_executable(task_2 Algorithms/task_2.cpp)
 add_executable(task_3 Algorithms/task_3.cpp)
 add_executable(task_4 Algorithms/task_4.cpp)
 
+add_executable(task_8 Algorithms/task_8.cpp)
 
 
 ### Семинары

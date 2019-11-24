@@ -32,6 +32,17 @@
 #include <queue>
 #include <cassert>
 
+namespace randomNums{
+    std::random_device random_device;
+    std::mt19937 random_engine(random_device());
+
+    int getUniformRandom(int range)
+    {
+        std::uniform_int_distribution<int> distribution(-range, range);
+        return distribution(random_engine);
+    }
+}
+
 struct Node
 {
     int value = 0;
@@ -100,61 +111,47 @@ Node* Merge(Node* left, Node* right)
     }
 }
 
-class DecatrTree
+class DescartesTree
 {
 public:
     void Add(int value);
 
-    void Add(int value, int priority);
-
     void Remove(int value);
-
-    void Print() const;
 
     int GetStatistic(size_t order) const;
 
-    size_t size() const;
-
-    ~DecatrTree();
+    ~DescartesTree();
 
 private:
 
     int GetStatistic(Node* node, size_t order) const;
 
-    size_t size_ = 0;
     Node* root = nullptr;
 };
 
 
-void DecatrTree::Add(int value)
+void DescartesTree::Add(int value)
 {
-    std::random_device random_device;
-    std::mt19937 random_engine(random_device());
-
     int priority = 0;
     Node* left;
     Node* right;
     Split(root, value, left, right);
     if (!left && !right)
     {
-        std::uniform_int_distribution<int> distribution(-300, 3 * 100);
-        priority = distribution(random_engine);
+        priority = randomNums::getUniformRandom(300);
     }
     else if (left && !right)
     {
         int t = std::abs(left->priority);
-        std::uniform_int_distribution<int> distribution(-t, t);
-        priority = distribution(random_engine);
+        priority = randomNums::getUniformRandom(t);
     }
     priority = 0;
     Node* new_node = new Node(value, priority);
     left = Merge(left, new_node);
     root = Merge(left, right);
-
-    ++size_;
 }
 
-void DecatrTree::Remove(int value)
+void DescartesTree::Remove(int value)
 {
     Node* left;
     Node* T2;
@@ -167,19 +164,13 @@ void DecatrTree::Remove(int value)
 
 }
 
-int DecatrTree::GetStatistic(size_t order) const
+int DescartesTree::GetStatistic(size_t order) const
 {
-    if (root)
-    {
-        return GetStatistic(root, order);
-    }
-    else
-    {
-        assert(false);
-    }
+    assert(root);
+    return GetStatistic(root, order);
 }
 
-int DecatrTree::GetStatistic(Node* node, size_t order) const
+int DescartesTree::GetStatistic(Node* node, size_t order) const
 {
     if (order <= node->subtree_size)
     {
@@ -203,32 +194,7 @@ int DecatrTree::GetStatistic(Node* node, size_t order) const
 
 }
 
-size_t DecatrTree::size() const
-{
-    return size_;
-}
-
-void DecatrTree::Print() const
-{
-    std::queue<Node*> queue;
-    if (root)
-        queue.push(root);
-
-    while (!queue.empty())
-    {
-        Node* current_node = queue.front();
-        queue.pop();
-        if (current_node->left)
-            queue.push(current_node->left);
-
-        if (current_node->right)
-            queue.push(current_node->right);
-
-        std::cout << "(" << current_node->value << "," << current_node->priority << ", " << current_node->subtree_size << ")" << std::endl;
-    }
-}
-
-DecatrTree::~DecatrTree()
+DescartesTree::~DescartesTree()
 {
     std::queue<Node*> queue;
     if (root)
@@ -251,7 +217,7 @@ DecatrTree::~DecatrTree()
 
 void task_7(size_t n)
 {
-    DecatrTree tree;
+    DescartesTree tree;
     for (size_t i = 0; i < n; i++)
     {
         int value, staticsticId;
@@ -267,7 +233,6 @@ void task_7(size_t n)
         }
         std::cout << tree.GetStatistic(staticsticId) << std::endl;
     }
-    //tree.Print();
     std::cout << std::endl;
 }
 

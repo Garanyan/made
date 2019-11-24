@@ -54,10 +54,11 @@ private:
     void doubleHashTable();
 
     std::vector<HashTableNode *> table;
+    std::vector<bool> removed;
     size_t filled_size_;
 };
 
-HashTable::HashTable(size_t initial_size) : table(initial_size, nullptr), filled_size_(0){}
+HashTable::HashTable(size_t initial_size) : table(initial_size, nullptr), removed(initial_size, false), filled_size_(0){}
 
 HashTable::~HashTable(){
     for(HashTableNode *head : table){
@@ -90,13 +91,17 @@ bool HashTable::Add(const std::string &key){
     size_t hash = firstHash(key);
     size_t shift = secondHash(key);
     size_t i = 1;
+    HashTableNode *new_node = nullptr;
+    size_t new_node_hash;
     const size_t startHash = hash;
     do{
         if(table[hash] == nullptr){
-            HashTableNode *new_node = new HashTableNode(key);
-            table[hash] = new_node;
-            ++filled_size_;
-            return true;
+            if(!new_node){
+                new_node = new HashTableNode(key);
+                new_node_hash = hash;
+                if(!removed[hash])
+                    break;
+            }
         }
         else if(table[hash]->key == key){
             return false;
@@ -104,6 +109,13 @@ bool HashTable::Add(const std::string &key){
         hash = (startHash + i * shift) % table.size();
         ++i;
     } while(hash != startHash);
+
+    if(new_node){
+        table[new_node_hash] = new_node;
+        ++filled_size_;
+        //removed[new_node_hash] = false;
+        return true;
+    }
 
     return false;
 }
@@ -114,13 +126,16 @@ bool HashTable::Remove(const std::string &key){
     size_t startHash = firstHash(key);
     size_t shift = secondHash(key);
     for(size_t hash = firstHash(key), i = 1;
-        table.at(hash) != nullptr; hash = (startHash + i * shift) % table.size(), i++){
-        if(table[hash]->key == key){
+        i < table.size(); hash = (startHash + i * shift) % table.size(), i++){
+        if(table[hash]!= nullptr && table[hash]->key == key){
             delete table[hash];
             table[hash] = nullptr;
             --filled_size_;
+            removed[hash] = true;
             return true;
         }
+        if(table[hash] == nullptr && !removed[hash])
+            break;
     }
 
     return false;
@@ -129,6 +144,8 @@ bool HashTable::Remove(const std::string &key){
 void HashTable::doubleHashTable(){
     auto prevTable = table;
     std::vector<HashTableNode *> newTable(table.size() * 4, nullptr);
+    removed.resize(newTable.size());
+    std::fill(removed.begin(), removed.end(), false);
     table = newTable;
 
     for(size_t i = 0; i < prevTable.size(); ++i){

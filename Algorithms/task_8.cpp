@@ -22,7 +22,7 @@ class HashTable{
 public:
     explicit HashTable(size_t initial_size = 8);
 
-    ~HashTable();
+    ~HashTable() = default;
 
     HashTable(const HashTable &) = delete;
 
@@ -39,32 +39,20 @@ public:
     bool Remove(const std::string &key);
 
 private:
-    struct HashTableNode{
-        std::string key;
-
-        HashTableNode(std::string key_) : key(std::move(key_)){}
-    };
-
     unsigned int firstHash(const std::string &str) const;
 
     unsigned int secondHash(const std::string &str) const;
 
-    unsigned int hornerHash(const char *str, int a) const;
+    static unsigned int hornerHash(const char *str, int a, size_t size);
 
     void doubleHashTable();
 
-    std::vector<HashTableNode *> table;
+    std::vector<std::string> table;
     std::vector<bool> removed;
     size_t filled_size_;
 };
 
-HashTable::HashTable(size_t initial_size) : table(initial_size, nullptr), removed(initial_size, false), filled_size_(0){}
-
-HashTable::~HashTable(){
-    for(HashTableNode *head : table){
-        delete head;
-    }
-}
+HashTable::HashTable(size_t initial_size) : table(initial_size, ""), removed(initial_size, false), filled_size_(0){}
 
 bool HashTable::Has(const std::string &key) const{
     assert(!key.empty());
@@ -72,12 +60,11 @@ bool HashTable::Has(const std::string &key) const{
     size_t startHash = firstHash(key);
     size_t shift = secondHash(key);
     for(size_t hash = firstHash(key), i = 1;
-        table.at(hash) != nullptr; hash = (startHash + i * shift) % table.size(), i++){
-        if(table.at(hash)->key == key){
+        !table[hash].empty() || removed[hash]; hash = (startHash + i * shift) % table.size(), i++){
+        if(table[hash] == key){
             return true;
         }
     }
-
     return false;
 }
 
@@ -91,29 +78,28 @@ bool HashTable::Add(const std::string &key){
     size_t hash = firstHash(key);
     size_t shift = secondHash(key);
     size_t i = 1;
-    HashTableNode *new_node = nullptr;
+    std::string new_node;
     size_t new_node_hash;
     const size_t startHash = hash;
     do{
-        if(table[hash] == nullptr){
-            if(!new_node){
-                new_node = new HashTableNode(key);
+        if(table[hash].empty()){
+            if(new_node.empty()){
+                new_node = key;
                 new_node_hash = hash;
                 if(!removed[hash])
                     break;
             }
         }
-        else if(table[hash]->key == key){
+        else if(table[hash] == key){
             return false;
         }
         hash = (startHash + i * shift) % table.size();
         ++i;
     } while(hash != startHash);
 
-    if(new_node){
+    if(!new_node.empty()){
         table[new_node_hash] = new_node;
         ++filled_size_;
-        //removed[new_node_hash] = false;
         return true;
     }
 
@@ -127,14 +113,13 @@ bool HashTable::Remove(const std::string &key){
     size_t shift = secondHash(key);
     for(size_t hash = firstHash(key), i = 1;
         i < table.size(); hash = (startHash + i * shift) % table.size(), i++){
-        if(table[hash]!= nullptr && table[hash]->key == key){
-            delete table[hash];
-            table[hash] = nullptr;
+        if(table[hash] == key){
+            table[hash].clear();
             --filled_size_;
             removed[hash] = true;
             return true;
         }
-        if(table[hash] == nullptr && !removed[hash])
+        if(table[hash].empty() && !removed[hash])
             break;
     }
 
@@ -143,28 +128,28 @@ bool HashTable::Remove(const std::string &key){
 
 void HashTable::doubleHashTable(){
     auto prevTable = table;
-    std::vector<HashTableNode *> newTable(table.size() * 4, nullptr);
+    std::vector<std::string> newTable(table.size() * 4, "");
     removed.resize(newTable.size());
     std::fill(removed.begin(), removed.end(), false);
     table = newTable;
 
     for(size_t i = 0; i < prevTable.size(); ++i){
-        if(prevTable[i] != nullptr){
-            Add(prevTable[i]->key);
-            delete prevTable[i];
+        if(!prevTable[i].empty()){
+            Add(prevTable[i]);
+            prevTable[i].clear();
         }
     }
 }
 
-unsigned int HashTable::hornerHash(const char *str, int a) const{
+unsigned int HashTable::hornerHash(const char *str, int a, size_t size) {
     unsigned int hash = 0;
     for(; *str != 0; ++str)
-        hash = (hash * a + *str) % table.size();
+        hash = (hash * a + *str) % size;
     return hash;
 }
 
 unsigned int HashTable::firstHash(const std::string &str) const{
-    return hornerHash(str.data(), 31);
+    return hornerHash(str.data(), 31, table.size());
 }
 
 unsigned int HashTable::secondHash(const std::string &str) const{

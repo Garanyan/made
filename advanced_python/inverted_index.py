@@ -27,27 +27,26 @@ DEFAULT_DATASET_PATH = "resources/wikipedia_sample"
 # logger = logging.getLogger(__name__)
 logger = logging.getLogger("my_example")
 
-import zlib, json, base64
-
-ZIPJSON_KEY = 'base64(zip(o))'
+# import zlib, json, base64
 
 
-def json_zip(j):
-    return base64.b64encode(zlib.compress(json.dumps(j).encode('utf-8'))).decode('ascii')
+
+# def json_zip(j):
+#     return base64.b64encode(zlib.compress(json.dumps(j).encode('utf-8'))).decode('ascii')
 
 
-def json_unzip(compressed_string):
-    try:
-        compressed_string = zlib.decompress(base64.b64decode(compressed_string))
-    except:
-        raise RuntimeError("Could not decode/unzip the contents")
-
-    try:
-        compressed_string = json.loads(compressed_string)
-    except:
-        raise RuntimeError("Could interpret the unzipped contents")
-    return compressed_string
-
+# def json_unzip(compressed_string):
+#     try:
+#         compressed_string = zlib.decompress(base64.b64decode(compressed_string))
+#     except:
+#         raise RuntimeError("Could not decode/unzip the contents")
+#
+#     try:
+#         compressed_string = json.loads(compressed_string)
+#     except:
+#         raise RuntimeError("Could interpret the unzipped contents")
+#     return compressed_string
+#
 
 class InvertedIndex:
     def __init__(self, word_to_docs_mapping):
@@ -71,7 +70,7 @@ class InvertedIndex:
         return list(result)
 
     def dump(self, filepath, storage_policy=None):
-        storage_policy = storage_policy or JsonZipStoragePolicy()
+        storage_policy = storage_policy or JsonStoragePolicy()
         assert isinstance(storage_policy, StoragePolicy), (
             "you provided wrong argument ..."
         )
@@ -87,7 +86,7 @@ class InvertedIndex:
 
     @classmethod
     def load(cls, filepath, storage_policy=None):
-        storage_policy = storage_policy or JsonZipStoragePolicy()
+        storage_policy = storage_policy or JsonStoragePolicy()
         assert isinstance(storage_policy, StoragePolicy), (
             "you provided wrong argument ..."
         )
@@ -105,23 +104,23 @@ class StoragePolicy:
         pass
 
 
-class JsonZipStoragePolicy(StoragePolicy):
-    # https://medium.com/@busybus/zipjson-3ed15f8ea85d
-    def dump(self, word_to_docs_mapping, index_fio):
-        serializable_word_to_docs_mapping = {
-            word: list(doc_ids)
-            for word, doc_ids in word_to_docs_mapping.items()
-        }
-        dump = json.dumps(serializable_word_to_docs_mapping)
-        index_fio.write(json_zip(dump))
-
-    def load(self, index_fio):
-        json_load = json.loads(json_unzip(index_fio.read()))
-        word_to_docs_mapping = {
-            word: set(json_load[word])
-            for word in json_load
-        }
-        return word_to_docs_mapping
+# class JsonZipStoragePolicy(StoragePolicy):
+#     # https://medium.com/@busybus/zipjson-3ed15f8ea85d
+#     def dump(self, word_to_docs_mapping, index_fio):
+#         serializable_word_to_docs_mapping = {
+#             word: list(doc_ids)
+#             for word, doc_ids in word_to_docs_mapping.items()
+#         }
+#         dump = json.dumps(serializable_word_to_docs_mapping)
+#         index_fio.write(json_zip(dump))
+#
+#     def load(self, index_fio):
+#         json_load = json.loads(json_unzip(index_fio.read()))
+#         word_to_docs_mapping = {
+#             word: set(json_load[word])
+#             for word in json_load
+#         }
+#         return word_to_docs_mapping
 
 
 class JsonStoragePolicy(StoragePolicy):
@@ -159,7 +158,8 @@ def build_inverted_index(documents):
         content.translate(str.maketrans('', '', string.punctuation))
         words = content.split()
         for word in words:
-            word_to_docs_mapping[word.lower()].add(int(doc_id))
+            #word_to_docs_mapping[word.lower()].add(int(doc_id))
+            word_to_docs_mapping[word].add(int(doc_id))
     return InvertedIndex(word_to_docs_mapping)
 
 

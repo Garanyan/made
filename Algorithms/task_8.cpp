@@ -1,5 +1,5 @@
 //
-// Created by Ovanes on 23.11.2019.
+// Created by Garanyan Ovanes (Ovanes-X) on 23.11.2019.
 //
 
 //Задача 8. Хеш-таблица (10 баллов)
@@ -60,7 +60,7 @@ bool HashTable::Has(const std::string &key) const{
     size_t startHash = firstHash(key);
     size_t shift = secondHash(key);
     for(size_t hash = firstHash(key), i = 1;
-        !table[hash].empty() || removed[hash]; hash = (startHash + i * shift) % table.size(), i++){
+        (!table[hash].empty() || removed[hash]) && i <= table.size(); hash = (startHash + i * shift) % table.size(), i++){
         if(table[hash] == key){
             return true;
         }
@@ -78,27 +78,26 @@ bool HashTable::Add(const std::string &key){
     size_t hash = firstHash(key);
     size_t shift = secondHash(key);
     size_t i = 1;
-    std::string new_node;
-    size_t new_node_hash;
+
+    size_t new_node_hash = table.size();
     const size_t startHash = hash;
     do{
         if(table[hash].empty()){
-            if(new_node.empty()){
-                new_node = key;
+            if(new_node_hash == table.size()){
                 new_node_hash = hash;
-                if(!removed[hash])
-                    break;
             }
+            if(!removed[hash])
+                break;
         }
         else if(table[hash] == key){
             return false;
         }
         hash = (startHash + i * shift) % table.size();
         ++i;
-    } while(hash != startHash);
+    } while(hash != startHash && i <= table.size());
 
-    if(!new_node.empty()){
-        table[new_node_hash] = new_node;
+    if(new_node_hash != table.size()){
+        table[new_node_hash] = key;
         ++filled_size_;
         return true;
     }
@@ -111,27 +110,28 @@ bool HashTable::Remove(const std::string &key){
 
     size_t startHash = firstHash(key);
     size_t shift = secondHash(key);
-    for(size_t hash = firstHash(key), i = 1;
+    for(size_t hash = startHash, i = 1;
         i < table.size(); hash = (startHash + i * shift) % table.size(), i++){
+        if(table[hash].empty() && !removed[hash])
+            break;
+
         if(table[hash] == key){
             table[hash].clear();
             --filled_size_;
             removed[hash] = true;
             return true;
         }
-        if(table[hash].empty() && !removed[hash])
-            break;
     }
 
     return false;
 }
 
 void HashTable::doubleHashTable(){
-    auto prevTable = table;
+    auto prevTable = std::move(table);
     std::vector<std::string> newTable(table.size() * 4, "");
     removed.resize(newTable.size());
     std::fill(removed.begin(), removed.end(), false);
-    table = newTable;
+    table = std::move(newTable);
 
     for(size_t i = 0; i < prevTable.size(); ++i){
         if(!prevTable[i].empty()){

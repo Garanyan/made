@@ -14,6 +14,7 @@ add_executable(task_7 Algorithms/task_7.cpp)
 
 add_executable(task_11 Algorithms/task_11.cpp)
 
+add_executable(task_16 Algorithms/task_16.cpp)
 
 
 ### Семинары

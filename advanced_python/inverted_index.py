@@ -5,6 +5,7 @@ import json
 import logging
 import sys
 import string
+from struct import pack, unpack, calcsize
 
 import time
 from time import sleep
@@ -70,12 +71,12 @@ class InvertedIndex:
         return list(result)
 
     def dump(self, filepath, storage_policy=None):
-        storage_policy = storage_policy or JsonStoragePolicy()
+        storage_policy = storage_policy or StructStoragePolicy()
         assert isinstance(storage_policy, StoragePolicy), (
             "you provided wrong argument ..."
         )
 
-        with open(filepath, "w") as fout:
+        with open(filepath, "bw") as fout:
             storage_policy.dump(self.word_to_docs_mapping, fout)
 
     def get_size(self):
@@ -86,12 +87,12 @@ class InvertedIndex:
 
     @classmethod
     def load(cls, filepath, storage_policy=None):
-        storage_policy = storage_policy or JsonStoragePolicy()
+        storage_policy = storage_policy or StructStoragePolicy()
         assert isinstance(storage_policy, StoragePolicy), (
             "you provided wrong argument ..."
         )
         word_to_docs_mapping = {}
-        with open(filepath, 'r') as f:
+        with open(filepath, 'br') as f:
             word_to_docs_mapping = storage_policy.load(f)
         return cls(word_to_docs_mapping)
 
@@ -141,6 +142,39 @@ class JsonStoragePolicy(StoragePolicy):
         return word_to_docs_mapping
 
 
+class StructStoragePolicy(StoragePolicy):
+    def dump(self, word_to_docs_mapping, index_fio):
+        index_fio.write(pack("I", len(word_to_docs_mapping)))
+
+        for word, doc_ids in word_to_docs_mapping.items():
+            index_fio.write(pack("II",len(word.encode('utf-8')), len(doc_ids)))
+            index_fio.write(pack(str(len(word.encode('utf-8')))+"s"+str(len(doc_ids))+"i", word.encode('utf-8'), *doc_ids))
+
+
+    def load(self, index_fio):
+        word_to_docs_mapping = {}
+        bytes = index_fio.read()
+        #print(bytes)
+        dict_size = unpack("I", bytes[0:calcsize('I')])[0]
+        iterator = calcsize('I')
+        for _ in range(dict_size):
+            string_len, index_size  = unpack("II", bytes[iterator:iterator+calcsize('II')])
+            iterator += calcsize('II')
+            #print("iterator", iterator)
+            #print(calcsize(index_size*'I'))
+            word = unpack(str(string_len) + "s" + str(index_size) + "i", bytes[iterator:iterator+calcsize(str(string_len)+"s"+index_size*'I')])
+            iterator += +calcsize(str(string_len)+"s"+index_size*'I')
+            # print(word[0].decode('utf-8'))
+            # print(word[1:])
+            word_to_docs_mapping.update({word[0].decode('utf-8'): set(word[1:])})
+            #print(word_indexes)
+
+
+        return word_to_docs_mapping
+
+
+
+
 def load_documents(filepath):
     documents = {}
     with open(filepath, encoding='utf-8') as fin:
@@ -152,15 +186,24 @@ def load_documents(filepath):
     return documents
 
 
+# def build_inverted_index(documents):
+#     word_to_docs_mapping = defaultdict(set)
+#     for doc_id, content in documents.items():
+#         #content.translate(str.maketrans('', '', string.punctuation))
+#         words = content.split()
+#         for word in words:
+#             #word_to_docs_mapping[word.lower()].add(int(doc_id))
+#             word_to_docs_mapping[word].add(int(doc_id))
+#     return InvertedIndex(word_to_docs_mapping)
+
 def build_inverted_index(documents):
     word_to_docs_mapping = defaultdict(set)
     for doc_id, content in documents.items():
-        content.translate(str.maketrans('', '', string.punctuation))
         words = content.split()
         for word in words:
-            #word_to_docs_mapping[word.lower()].add(int(doc_id))
             word_to_docs_mapping[word].add(int(doc_id))
     return InvertedIndex(word_to_docs_mapping)
+
 
 
 def setup_parser(parser):
@@ -291,4 +334,11 @@ def main():
 
 
 if __name__ == "__main__":
+    # policy = StructStoragePolicy()
+    # with open("compressed", "wb") as fout:
+    #     policy.dump({"one":  [1,2,5,8], "two":[2,5,10,33,45,50]}, fout)
+    #
+    # with open("compressed", "rb") as fin:
+    #     policy.load(fin)
+
     main()

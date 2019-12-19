@@ -17,7 +17,7 @@ std::vector<size_t> piFucntion(const std::string& text)
     for (size_t i = 1; i < text.size(); ++i)
     {
         size_t k = pi_values[i - 1];
-        while (k > 0 && text.at(k) != text.at(i))
+        while (k > 0 && text[k] != text[i])
             k = pi_values[k - 1];
 
         if (text.at(k) == text.at(i))
@@ -31,24 +31,24 @@ std::vector<size_t> piFucntion(const std::string& text)
 
 void printPatternPositions(const std::string& pattern, const std::string& text)
 {
-    std::vector<size_t> A;
-    A.reserve(text.size());
-    std::vector<size_t> pi = piFucntion(text);
+    std::vector<size_t> found_positions;
+    found_positions.reserve(text.size());
+    std::vector<size_t> pattern_pi_fun = piFucntion(pattern);
 
     for (size_t i = 0, k = 0; i < text.size(); ++i)
     {
-        while (k > 0 && (k >= pattern.size() ||text.at(i) != pattern[k]))
-            k = pi.at(k-1);
+        while (k > 0 && (k >= pattern.size() || text[i] != pattern[k]))
+            k = pattern_pi_fun.at(k-1);
 
-        if (text.at(i) == pattern.at(k))
+        if (text[i] == pattern[k])
             ++k;
 
         if (k == pattern.size())
-            A.push_back(i + 1 - pattern.size());
+            found_positions.push_back(i + 1 - pattern.size());
 
     }
 
-    for (auto pos: A)
+    for (auto pos: found_positions)
     {
         std::cout << pos << " ";
     }

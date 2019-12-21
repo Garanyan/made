@@ -13,6 +13,7 @@ add_executable(task_6 Algorithms/task_6.cpp)
 add_executable(task_7 Algorithms/task_7.cpp)
 
 add_executable(task_11 Algorithms/task_11.cpp)
+add_executable(task_17 Algorithms/task_17.cpp)
 
 
 

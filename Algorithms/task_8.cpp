@@ -128,7 +128,7 @@ bool HashTable::Remove(const std::string &key){
 
 void HashTable::doubleHashTable(){
     auto prevTable = std::move(table);
-    std::vector<std::string> newTable(table.size() * 4, "");
+    std::vector<std::string> newTable(prevTable.size() * 4, "");
     removed.resize(newTable.size());
     std::fill(removed.begin(), removed.end(), false);
     table = std::move(newTable);

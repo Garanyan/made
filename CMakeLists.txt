@@ -17,6 +17,7 @@ add_executable(task_9 Algorithms/task_9.cpp Algorithms/Huffman.h)
 add_executable(task_11 Algorithms/task_11.cpp)
 
 add_executable(task_14 Algorithms/task_14.cpp)
+add_executable(task_16 Algorithms/task_16.cpp)
 
 
 

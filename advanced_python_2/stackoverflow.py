@@ -5,207 +5,21 @@ import json
 import logging
 import sys
 import string
-from struct import pack, unpack, calcsize
-
-import time
-from time import sleep
-
-
-def do_busy_work(seconds=4):
-    print("time sleep")
-    return time.sleep(seconds)
-
-
-def do_busy_work_full_import(seconds=5):
-    return sleep(seconds)
-
-
-def do_busy_work_nested():
-    do_busy_work()
-    do_busy_work_full_import()
-
 
 DEFAULT_DATASET_PATH = "resources/wikipedia_sample"
 
-# logger = logging.getLogger(__name__)
 logger = logging.getLogger("my_example")
 
-# import zlib, json, base64
 
-
-
-# def json_zip(j):
-#     return base64.b64encode(zlib.compress(json.dumps(j).encode('utf-8'))).decode('ascii')
-
-
-# def json_unzip(compressed_string):
-#     try:
-#         compressed_string = zlib.decompress(base64.b64decode(compressed_string))
-#     except:
-#         raise RuntimeError("Could not decode/unzip the contents")
-#
-#     try:
-#         compressed_string = json.loads(compressed_string)
-#     except:
-#         raise RuntimeError("Could interpret the unzipped contents")
-#     return compressed_string
-#
-
-class InvertedIndex:
-    def __init__(self, word_to_docs_mapping):
-        # make a high-level copy
-        self.word_to_docs_mapping = {
-            word: doc_ids
-            for word, doc_ids in word_to_docs_mapping.items()
-        }
-
-    def query(self, words):
-        # список документов в которых есть все указанные слова
-        result = set()
-
-        for word in words:
-            if word in self.word_to_docs_mapping.keys():
-                if not result:
-                    result = self.word_to_docs_mapping[word]
-                else:
-                    result = result.intersection(self.word_to_docs_mapping[word])
-
-        return list(result)
-
-    def dump(self, filepath, storage_policy=None):
-        storage_policy = storage_policy or StructStoragePolicy()
-        assert isinstance(storage_policy, StoragePolicy), (
-            "you provided wrong argument ..."
-        )
-
-        with open(filepath, "bw") as fout:
-            storage_policy.dump(self.word_to_docs_mapping, fout)
-
-    def get_size(self):
-        return len(self.word_to_docs_mapping)
-
-    def __eq__(self, other):
-        return self.word_to_docs_mapping == other.word_to_docs_mapping
-
-    @classmethod
-    def load(cls, filepath, storage_policy=None):
-        storage_policy = storage_policy or StructStoragePolicy()
-        assert isinstance(storage_policy, StoragePolicy), (
-            "you provided wrong argument ..."
-        )
-        word_to_docs_mapping = {}
-        with open(filepath, 'br') as f:
-            word_to_docs_mapping = storage_policy.load(f)
-        return cls(word_to_docs_mapping)
-
-
-class StoragePolicy:
-    def dump(self, word_to_docs_mapping, index_fio):
+class StackoverflowAnalyzer:
+    def __init__(self, posts_xml):
         pass
 
-    def load(self, index_fio):
+    def parse_file(self, xml_filepath):
         pass
 
-
-# class JsonZipStoragePolicy(StoragePolicy):
-#     # https://medium.com/@busybus/zipjson-3ed15f8ea85d
-#     def dump(self, word_to_docs_mapping, index_fio):
-#         serializable_word_to_docs_mapping = {
-#             word: list(doc_ids)
-#             for word, doc_ids in word_to_docs_mapping.items()
-#         }
-#         dump = json.dumps(serializable_word_to_docs_mapping)
-#         index_fio.write(json_zip(dump))
-#
-#     def load(self, index_fio):
-#         json_load = json.loads(json_unzip(index_fio.read()))
-#         word_to_docs_mapping = {
-#             word: set(json_load[word])
-#             for word in json_load
-#         }
-#         return word_to_docs_mapping
-
-
-class JsonStoragePolicy(StoragePolicy):
-    def dump(self, word_to_docs_mapping, index_fio):
-        serializable_word_to_docs_mapping = {
-            word: list(doc_ids)
-            for word, doc_ids in word_to_docs_mapping.items()
-        }
-        dump = json.dumps(serializable_word_to_docs_mapping)
-        index_fio.write(dump)
-
-    def load(self, index_fio):
-        json_load = json.load(index_fio)
-        word_to_docs_mapping = {
-            word: set(json_load[word])
-            for word in json_load
-        }
-        return word_to_docs_mapping
-
-
-class StructStoragePolicy(StoragePolicy):
-    def dump(self, word_to_docs_mapping, index_fio):
-        index_fio.write(pack("I", len(word_to_docs_mapping)))
-
-        for word, doc_ids in word_to_docs_mapping.items():
-            index_fio.write(pack("II",len(word.encode('utf-8')), len(doc_ids)))
-            index_fio.write(pack(str(len(word.encode('utf-8')))+"s"+str(len(doc_ids))+"i", word.encode('utf-8'), *doc_ids))
-
-
-    def load(self, index_fio):
-        word_to_docs_mapping = {}
-        bytes = index_fio.read()
-        #print(bytes)
-        dict_size = unpack("I", bytes[0:calcsize('I')])[0]
-        iterator = calcsize('I')
-        for _ in range(dict_size):
-            string_len, index_size  = unpack("II", bytes[iterator:iterator+calcsize('II')])
-            iterator += calcsize('II')
-            #print("iterator", iterator)
-            #print(calcsize(index_size*'I'))
-            word = unpack(str(string_len) + "s" + str(index_size) + "i", bytes[iterator:iterator+calcsize(str(string_len)+"s"+index_size*'I')])
-            iterator += +calcsize(str(string_len)+"s"+index_size*'I')
-            # print(word[0].decode('utf-8'))
-            # print(word[1:])
-            word_to_docs_mapping.update({word[0].decode('utf-8'): set(word[1:])})
-            #print(word_indexes)
-
-
-        return word_to_docs_mapping
-
-
-
-
-def load_documents(filepath):
-    documents = {}
-    with open(filepath, encoding='utf-8') as fin:
-        for line in fin:
-            line = line.rstrip("\n")
-            if line:
-                doc_id, content = line.split("\t", 1)
-                documents[int(doc_id)] = content
-    return documents
-
-
-# def build_inverted_index(documents):
-#     word_to_docs_mapping = defaultdict(set)
-#     for doc_id, content in documents.items():
-#         #content.translate(str.maketrans('', '', string.punctuation))
-#         words = content.split()
-#         for word in words:
-#             #word_to_docs_mapping[word.lower()].add(int(doc_id))
-#             word_to_docs_mapping[word].add(int(doc_id))
-#     return InvertedIndex(word_to_docs_mapping)
-
-def build_inverted_index(documents):
-    word_to_docs_mapping = defaultdict(set)
-    for doc_id, content in documents.items():
-        words = content.split()
-        for word in words:
-            word_to_docs_mapping[word].add(int(doc_id))
-    return InvertedIndex(word_to_docs_mapping)
-
+    def parse_xml_line(self, xml_line):
+        pass
 
 
 def setup_parser(parser):
@@ -336,11 +150,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # policy = StructStoragePolicy()
-    # with open("compressed", "wb") as fout:
-    #     policy.dump({"one":  [1,2,5,8], "two":[2,5,10,33,45,50]}, fout)
-    #
-    # with open("compressed", "rb") as fin:
-    #     policy.load(fin)
-
     main()

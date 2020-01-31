@@ -32,19 +32,18 @@ def setup_parser(parser):
     """
 
     parser.add_argument(
-        "--questions", default="/path/to/dataset/questions.xml", dest="questions",
+        "--questions", default="resources/stackoverflow_posts_sample.xml", dest="questions",
         help="path to stackowerflow database",
     )
 
     parser.add_argument(
-        "--stop-words", default="/path/to/stop_words_in_koi8r.txt", dest="stop",
+        "--stop-words", default="stop_words_en.txt", dest="stop",
         help="path to stop words. which will be excluded",
     )
 
     parser.add_argument(
-        "--queries", type=FileType("r", encoding="koi8-r"),
-        default=io.TextIOWrapper(sys.stdin.buffer, encoding="koi8-r"),
-        dest="query_file", help="collection of queries to run against Inverted Index",
+        "--queries", default="resources/queries.csv",
+        dest="query_file", help="collection of queries to run against stackowerflow [start_year,end_year,top_N]",
     )
 
     parser.set_defaults(

@@ -24,55 +24,30 @@ class StackoverflowAnalyzer:
 
 def setup_parser(parser):
     """
-    parser.add_argument(
-        "-d", "--dataset", default=DEFAULT_DATASET_PATH, dest="dataset",
-        help="path to dataset to build Inverted Index",
-        # "-d", "--dataset", required=True, dest="dataset",
-        # "-i", "--input", required=True, dest="dataset",
-        # metavar="FANCY_PATH",
-        # help="path to dataset to build Inverted Index, default path is %(default)s",
-    )
-    parser.add_argument(
-        "-q", "--query", nargs="+", required=True,
-        help="list words to look for documents",
-    )
+    python3 analyze_stackoverflow.py \
+            --questions /path/to/dataset/questions.xml \
+            --stop-words /path/to/stop_words_in_koi8r.txt \
+            --queries /path/to/quries.csv
+
     """
-    subparsers = parser.add_subparsers(help="choose command to run")
 
-    build_parser = subparsers.add_parser(
-        "build", help="load dataset, build II and save to file",
-        formatter_class=ArgumentDefaultsHelpFormatter,
+    parser.add_argument(
+        "--questions", default="/path/to/dataset/questions.xml", dest="questions",
+        help="path to stackowerflow database",
     )
-    build_parser.add_argument(
-        "-d", "--dataset", default=DEFAULT_DATASET_PATH, dest="dataset",
-        help="path to dataset to build Inverted Index",
-    )
-    build_parser.add_argument(
-        "-o", "--output", default="inverted.index", dest="output",
-        help="path to output to export Inverted Index",
-    )
-    build_parser.set_defaults(callback=process_build_arguments)
 
-    query_parser = subparsers.add_parser("query", help="query Inverted Index")
-    query_group = query_parser.add_mutually_exclusive_group(required=False)
-    query_group.add_argument(
-        "--query-file-cp1251", type=FileType("r", encoding="cp1251"),
-        # default=open("../resources/queries.txt"),
-        # default=sys.stdin,
-        default=io.TextIOWrapper(sys.stdin.buffer, encoding="cp1251"),
+    parser.add_argument(
+        "--stop-words", default="/path/to/stop_words_in_koi8r.txt", dest="stop",
+        help="path to stop words. which will be excluded",
+    )
+
+    parser.add_argument(
+        "--queries", type=FileType("r", encoding="koi8-r"),
+        default=io.TextIOWrapper(sys.stdin.buffer, encoding="koi8-r"),
         dest="query_file", help="collection of queries to run against Inverted Index",
     )
-    query_group.add_argument(
-        "--query-file-utf8", type=FileType("r", encoding="utf-8"),
-        default=sys.stdin,
-        # default=open("../resources/queries.txt"),
-        dest="query_file", help="collection of queries to run against Inverted Index",
-    )
-    query_parser.add_argument(
-        "--index", default="inverted.index",
-        dest="index", help="path to file with inverted index",
-    )
-    query_parser.set_defaults(
+
+    parser.set_defaults(
         dataset=DEFAULT_DATASET_PATH,
         callback=process_query_arguments,
     )

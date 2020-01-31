@@ -280,7 +280,7 @@ class LsaDocs(object):
         Выделение памяти для представления всех документов в CSC-матрице.
         """
         files = os.listdir(path_to_train_data)
-        input_files = filter(lambda x: x.endswith("json"), files)
+        input_files = list(filter(lambda x: x.endswith("json"), files))
         for j in range(len(input_files)):
             print("Processing file: %s" % input_files[j])
             path = path_to_train_data + "/" + input_files[j]
@@ -318,7 +318,7 @@ class LsaDocs(object):
         """
         self.reserve_train_memory(path_to_train_data)
         files = os.listdir(path_to_train_data)
-        input_files = filter(lambda x: x.endswith("json"), files)
+        input_files = list(filter(lambda x: x.endswith("json"), files))
         for j in range(len(input_files)):
             print("Processing file: %s" % input_files[j])
             path = path_to_train_data + "/" + input_files[j]
@@ -424,20 +424,21 @@ class LsaDocs(object):
 if __name__ == "__main__":
     # original doc vector size
     terms_amount = 213887
+    terms_amount = 381483
 
     # path to LSA-matrix
-    path_to_lsa = "/home/ovanes/asr/stlab/prototypes/lsa/data/model/kw_full.lsa"
+    path_to_lsa = "/home/ovanes/made/ML/task_3/test.lsa"
 
     # init
     lsa_obj = LsaDocs(terms_amount)
 
     # ------ LSA train -------
-    # path_to_train_data = r"d:\Data\Texts\rus\kw\full"
+    # path_to_train_data = "/home/ovanes/made/ML/task_3/train"
     # lsa_obj.lsa_train(path_to_train_data)
     # lsa_obj.save_lsa(path_to_lsa)
 
     # ------- LSA test -------
-    path_to_json = "/home/ovanes/asr/stlab/prototypes/lsa/data/doc_terms/kw_3inews_common_ru_2017-09-01.json"
+    path_to_json = "/home/ovanes/made/ML/task_3/train/new_test_1.json"
     path_to_result = "/home/ovanes/asr/stlab/prototypes/lsa/data/results/test_taxones.txt"
     lsa_obj.load_lsa(path_to_lsa)
     lsa_obj.get_json_docs_taxones(path_to_json, 100, path_to_result)

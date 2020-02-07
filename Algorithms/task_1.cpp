@@ -34,94 +34,143 @@
 //2 66
 //NO
 
-
 #include <string>
-#include <cstdio>
 #include <iostream>
+#include <cstddef>
+#include <cassert>
 
-struct queue
-{
-	size_t size;
-	size_t buffer_size;
-	int* data;
+template<typename T>
+class stack{
+public:
+    stack();
 
-	queue(): size(0), buffer_size(8)
-	{
-		data = new int[buffer_size];
-	}
+    ~stack();
 
-	~queue()
-	{
-		delete[] data;
-	}
+    void push(T value);
 
-	void double_buffer()
-	{
-		int* new_data = new int[2*buffer_size];//check null ?
+    T pop();
 
-		for(size_t i=0; i < size; ++i)
-		{
-			new_data[i] = data[i];
-		}
+    bool empty() const;
 
-		delete[] data;
-		data = new_data;
-	}
+    size_t getSize() const;
 
-	void push_back(int value)
-	{
-		if(size >= buffer_size)
-		{
-			double_buffer();
-		}
+private:
+    void double_buffer();
 
-		data[size] = value;
-		++size;
-	}
-
-	int pop_front()
-	{
-		if(size > 0)
-		{
-			size--;
-			return data[size]; //fix
-		}
-        return -1;
-	}
+    size_t size;
+    size_t buffer_size;
+    T *data;
 };
 
-int main(int argc, char** argv)
-{
-	std::string result = "YES";
+template<typename T>
+T stack<T>::pop(){
+    assert(!empty());
+    size--;
+    return data[size];
+}
 
-	int n = 0;
-	std::cin>>n;
-	int command = -1;
-	int value = -1;
-    queue v;
-	for(size_t i=0; i< n; ++i)
-    {
-        std::cin>>command;
-        std::cin>>value;
+template<typename T>
+bool stack<T>::empty() const{
+    return size == 0;
+}
 
-        switch (command)
-        {
-//            case 1:
-//                break;
-            case 2:
-                if(value != v.pop_front())
-                {
+template<typename T>
+void stack<T>::push(T value){
+    if(size >= buffer_size){
+        double_buffer();
+    }
+
+    data[size] = value;
+    ++size;
+}
+
+template<typename T>
+void stack<T>::double_buffer(){
+    T *new_data = new T[2 * buffer_size];//check null ?
+    buffer_size = buffer_size * 2;
+    for(size_t i = 0; i < size; ++i){
+        new_data[i] = data[i];
+    }
+
+    delete[] data;
+    data = new_data;
+}
+
+template<typename T>
+stack<T>::~stack(){
+    delete[] data;
+}
+
+template<typename T>
+stack<T>::stack() : size(0), buffer_size(8){
+    data = new T[buffer_size];
+}
+
+template<typename T>
+size_t stack<T>::getSize() const{
+    return size;
+}
+
+class queue{
+private:
+    stack<int> in;
+    stack<int> out;
+public:
+    void push(int v);
+
+    int pop();
+
+    bool empty() const;
+
+};
+
+void queue::push(int v){
+    in.push(v);
+}
+
+int queue::pop(){
+    assert(!empty());
+    if(out.empty()){
+        while(!in.empty()){
+            out.push(in.pop());
+        }
+    }
+    return out.pop();
+}
+
+bool queue::empty() const{
+    return in.empty() && out.empty();
+}
+
+int main(int argc, char **argv){
+    std::string result = "YES";
+
+    int n = 0;
+    std::cin >> n;
+    int command = -1;
+    int value = -1;
+    queue q;
+    for(size_t i = 0; i < n; ++i){
+        std::cin >> command;
+        std::cin >> value;
+
+        switch(command){
+            case 2: {
+                int tmp = -1;
+                if(!q.empty()){
+                    tmp = q.pop();
+                }
+                if(value != tmp){
                     result = "NO";
                 }
+            }
                 break;
             case 3:
-                v.push_back(value);
+                q.push(value);
                 break;
-//            case 4:
-//                break;
         }
     }
 
-	std::cout<<result;
-	return 0;
+    std::cout << result << std::endl;
+    return 0;
 }

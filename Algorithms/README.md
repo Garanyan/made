@@ -10,7 +10,7 @@
 11_2 - количество различных кратчайших путей в грайфе
 16 - Поиск подстроки префикс-функции (алгоритм Кнута-Морриса-Пратта
 
-Обход в глубину DFS графа
+Обход в глубину DFS графа time O(V+E), space O(V)
 помечаем посещенные и идем по всем соседям
 
 
@@ -268,7 +268,7 @@ int binarySearch(int array[], int x, int low, int high) {
   return -1;
 }
 ---
-  void reverse()
+  void reverseList()
     {
         // Initialize current, previous and
         // next pointers
@@ -289,3 +289,27 @@ int binarySearch(int array[], int x, int low, int high) {
         head = prev;
     }
 
+---
+class Solution {
+public:
+    bool isSymmetricTree(TreeNode* root) {
+        return root == nullptr || 
+            isSymmetric(root->left, root->right);
+    }
+    
+    bool isSymmetric(TreeNode* l, TreeNode* r)
+    {
+        if(l==r)
+        {
+            return r == nullptr;
+        }
+        
+        if(l==nullptr || r == nullptr)
+        {
+            return false;
+        }
+        
+        return l->val==r->val && isSymmetric(l->left, r->right) && isSymmetric(l->right, r->left);
+    }
+};
+---
